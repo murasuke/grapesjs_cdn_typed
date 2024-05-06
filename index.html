@@ -1,0 +1,54 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>grapesjs sample</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <style>
+    /* 全画面表示 */
+    body,
+    html {
+      margin: 0;
+    }
+  </style>
+  <script src="//unpkg.com/grapesjs"></script>
+  <script src="//unpkg.com/grapesjs-blocks-basic"></script>
+  <link rel="stylesheet" href="//unpkg.com/grapesjs/dist/css/grapes.min.css">
+  <link rel="stylesheet" href="./index.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header id="header">
+      Header Panel
+    </header>
+    <main class="row">
+      <!-- 左パネル -->
+      <div id="layers" className="column" style="flex-basis: 500px">
+        <div id="blocks-container"></div>
+        Layers
+        <div id="layers-container"></div>
+      </div>
+      <div class="column editor-clm">
+        <!-- エディタ領域 -->
+        <div id="gjs" style="overflow: hidden"></div>
+      </div>
+      <div id="style-manager" class="column" style="flex-basis: 500px">
+        <!-- 右パネル -->
+        スタイルマネージャー
+        <br />
+        <!-- 下のパネルは縦並びで表示 -->
+        <div id="selectors-container"></div>
+        <div id="traits-container"></div>
+        <div id="style-manager-container"></div>
+      </div>
+    </main>
+    <footer id="footer">
+      Footer Panel
+      <div class="panel__basic-actions" style="flex-grow: 1;"></div>
+    </footer>
+  </div>
+  <script src="./index.js"></script>
+</body>
+
+</html>
