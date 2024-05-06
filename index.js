@@ -232,9 +232,20 @@ const newPanel = panelManager.addPanel({
     {
       id: 'export',
       className: 'btn-open-export',
-      label: 'Exp',
+      label: `<span class="material-symbols-outlined">
+      html
+      </span>`,
       command: 'export-template',
       context: 'export-template', // For grouping context of buttons from the same panel
+    },
+    {
+      id: 'open-code',
+      className: 'btn-open-code',
+      label: `<span class="material-symbols-outlined">
+      code
+      </span>`,
+      command: 'core:open-code',
+      context: 'core:open-code',
     },
     {
       id: 'show-json',
@@ -251,21 +262,90 @@ const newPanel = panelManager.addPanel({
           .open();
       },
     },
+    {
+      id: 'open-modal',
+      className: 'btn-open-modal',
+      label: `<span class="material-symbols-outlined">
+      open_in_new
+      </span>`,
+      context: 'core:open-modal',
+      command: (editor) => {
+        openModal();
+      },
+    },
   ],
 });
+
+// Open modal
+const openModal = () => {
+  const content = document.createElement('div');
+  content.innerHTML = `<input id="txtText" type="text"> <button onclick="closeModal()" >閉じる</button>`;
+  editor.Modal.open({
+    title: 'My title', // string | HTMLElement
+    content: content, // string | HTMLElement
+  });
+};
+const closeModal = () => {
+  const content = editor.Modal.getContent();
+  console.log(content.querySelector('#txtText').value);
+  editor.Modal.close();
+};
 
 // コンポーネントを上下に移動(試作品)
 editor.on('component:selected', () => {
   const selectedComponent = editor.getSelected();
-  if (selectedComponent && selectedComponent.attributes) {
-    //createBlockTemplate functionality
+  if (selectedComponent && selectedComponent.parent()) {
     const commandMoveUpClass = '';
     const commandMoveDownClass = '';
+
+    const commandMoveUp = (args) => {
+      const selected = editor.getSelected();
+
+      const selectedIndex = selected.collection.indexOf(selected);
+      if (selected.parent()) {
+        if (selectedIndex > 0) {
+          selected.move(selected.parent(), { at: selectedIndex - 1 });
+        } else {
+          // 先頭の場合親の親の最後に移動(注意：うまく動いてない)
+          const parent = selected.parent().parent();
+          if (parent) {
+            if (editor.Components.canMove(parent, selected)) {
+              selected.remove({ temporary: true });
+              parent.append(selected, {
+                at: parent.collection.length,
+              });
+            }
+          }
+        }
+      }
+    };
+
+    const commandMoveDown = (args) => {
+      const selected = editor.getSelected();
+
+      const selectedIndex = selected.collection.indexOf(selected);
+
+      const parent = selected.parent();
+      selected.remove({ temporary: true }); // temporary option will avoid removing component related styles
+      parent.append(selected, { at: selectedIndex + 1 });
+
+      // テストコード：ひとつ前と後のComponentを取得する方法
+      // const layerData = editor.Layers.getLayerData(selected);
+      // console.log(layerData);
+      const collection = selected.collection;
+      if (selectedIndex > 0) {
+        const prevModel = collection.at(selectedIndex - 1);
+      }
+      if (selectedIndex < collection.length - 1) {
+        const nextModel = collection.at(selectedIndex + 1);
+      }
+    };
 
     const defaultToolbar = selectedComponent.get('toolbar');
     const commandExists = defaultToolbar.some(
       (item) => item.command.name === 'commandMoveUp'
     );
+
     if (!commandExists) {
       selectedComponent.set({
         toolbar: [
@@ -274,37 +354,13 @@ editor.on('component:selected', () => {
             attributes: { class: commandMoveUpClass },
             label:
               '<span class="material-symbols-outlined material-icons md-16" style="position: relative;top:5px;">arrow_upward</span>',
-            command: (args) => {
-              const selected = editor.getSelected();
-              const selectedIndex = selected.collection.indexOf(selected);
-
-              selected.move(selected.parent(), { at: selectedIndex - 1 });
-            },
+            command: commandMoveUp,
           },
           {
             attributes: { class: commandMoveDownClass },
             label:
               '<span class="material-symbols-outlined material-icons md-16" style="position: relative;top:5px;">arrow_downward</span>',
-            command: (args) => {
-              const selected = editor.getSelected();
-
-              const selectedIndex = selected.collection.indexOf(selected);
-
-              const parent = selected.parent();
-              selected.remove({ temporary: true }); // temporary option will avoid removing component related styles
-              parent.append(selected, { at: selectedIndex + 1 });
-
-              // テストコード：ひとつ前と後のComponentを取得する方法
-              // const layerData = editor.Layers.getLayerData(selected);
-              // console.log(layerData);
-              const collection = selected.collection;
-              if (selectedIndex > 0) {
-                const prevModel = collection.at(selectedIndex - 1);
-              }
-              if (selectedIndex < collection.length - 1) {
-                const nextModel = collection.at(selectedIndex + 1);
-              }
-            },
+            command: commandMoveDown,
           },
         ],
       });
