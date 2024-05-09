@@ -247,14 +247,34 @@ const newPanel = panelManager.addPanel({
       command: (editor) => {
         const selected = editor.getSelected();
         editor.Modal.setTitle('Components HTML')
-        .setContent(
-          `<textarea style="width:100%; height: 250px;">${selected ? selected.toHTML() : editor.getHtml()}</textarea>`
-        )
-        .open();
+          .setContent(
+            `<textarea style="width:100%; height: 250px;">${
+              selected ? selected.toHTML() : editor.getHtml()
+            }</textarea>`
+          )
+          .open();
 
         //editor.getHtml();
         //editor.getCss();
-      }
+      },
+    },
+    {
+      id: 'open-css',
+      className: 'btn-open-css',
+      label: `css`,
+      command: (editor) => {
+        const selected = editor.getSelected();
+        editor.Modal.setTitle('Components HTML')
+          .setContent(
+            `<textarea style="width:100%; height: 250px;">${
+              selected ? findComponentStyles(editor, selected) : editor.getCss()
+            }</textarea>`
+          )
+          .open();
+
+        //editor.getHtml();
+        //editor.getCss();
+      },
     },
     {
       id: 'show-json',
@@ -284,6 +304,77 @@ const newPanel = panelManager.addPanel({
     },
   ],
 });
+
+/**
+ *
+ * @param {import('grapesjs').Editor} editor
+ * @param {string} id
+ * @returns {string}
+ */
+function getCss(editor, id) {
+  const style = editor.CssComposer.getRule(`#${id}`);
+  const hoverStyle = editor.CssComposer.getRule(`#${id}:hover`);
+
+  if (style) {
+    if (hoverStyle) {
+      return style.toCSS() + ' ' + hoverStyle.toCSS();
+    }
+    return style.toCSS();
+  } else {
+    return '';
+  }
+}
+
+/**
+ *
+ * @param {import('grapesjs').Editor} editor
+ * @param {string} id
+ * @returns {string}
+ */
+function findComponentStyles(editor, selected) {
+  let css = '';
+  if (selected) {
+    const childModel = selected.components().models;
+    if (childModel) {
+      for (const model of childModel) {
+        css = css + findComponentStyles(editor, model);
+      }
+      return css + getCss(editor, selected.getId());
+    } else {
+      return getCss(editor, selected.getId());
+    }
+  }
+}
+
+/**
+ *
+ * @param {import('grapesjs').Editor} editor
+ * @param {import('grapesjs').Component} selected
+ * @param {string} name_blockId
+ * @returns {string}
+ */
+function createBlockTemplate(editor, selected, name_blockId) {
+  const bm = editor.BlockManager;
+  const blockId = name_blockId.blockId;
+  const name = name_blockId.name;
+
+  let elementHTML = selected.getEl().outerHTML;
+  let first_partHtml = elementHTML.substring(0, elementHTML.indexOf(' '));
+  let second_partHtml = elementHTML.substring(elementHTML.indexOf(' ') + 1);
+  first_partHtml += ` custom_block_template=true block_id="${blockId}" `;
+  let finalHtml = first_partHtml + second_partHtml;
+  const blockCss = findComponentStyles(editor, selected);
+  const css = `<style>${blockCss}</style>`;
+  const elementHtmlCss = finalHtml + css;
+
+  bm.add(`customBlockTemplate_${blockId}`, {
+    category: 'Custom Blocks',
+    attributes: { custom_block_template: true },
+    label: `${name}`,
+    media: '<i class="fa fa-square"></i>',
+    content: elementHtmlCss,
+  });
+}
 
 // Open modal
 const openModal = () => {
