@@ -235,7 +235,7 @@ const newPanel = panelManager.addPanel({
       label: `<span class="material-symbols-outlined">
       html
       </span>`,
-      command: 'export-template',
+      command: 'export-template', // 'core:open-code' も同じ
       context: 'export-template', // For grouping context of buttons from the same panel
     },
     {
@@ -244,8 +244,17 @@ const newPanel = panelManager.addPanel({
       label: `<span class="material-symbols-outlined">
       code
       </span>`,
-      command: 'core:open-code',
-      context: 'core:open-code',
+      command: (editor) => {
+        const selected = editor.getSelected();
+        editor.Modal.setTitle('Components HTML')
+        .setContent(
+          `<textarea style="width:100%; height: 250px;">${selected ? selected.toHTML() : editor.getHtml()}</textarea>`
+        )
+        .open();
+
+        //editor.getHtml();
+        //editor.getCss();
+      }
     },
     {
       id: 'show-json',
