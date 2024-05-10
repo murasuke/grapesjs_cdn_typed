@@ -167,13 +167,7 @@ const cat = blockManager.getCategories();
 console.log(cat);
 blockManager.add('section', {
   label: '<b>Section</b>', // You can use HTML/SVG inside labels
-  media: `<svg fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-viewBox="0 0 92 92" enable-background="new 0 0 92 92" xml:space="preserve">
-<path id="XMLID_1210_" d="M76,2H16c-2.2,0-4,1.8-4,4v80c0,2.2,1.8,4,4,4h60c2.2,0,4-1.8,4-4V6C80,3.8,78.2,2,76,2z M72,82H20V10h52
-V82z M30,67.5c0-1.9,1.6-3.5,3.5-3.5h23.8c1.9,0,3.5,1.6,3.5,3.5S59.3,71,57.3,71H33.5C31.6,71,30,69.4,30,67.5z M30,53.5
-c0-1.9,1.6-3.5,3.5-3.5h23.8c1.9,0,3.5,1.6,3.5,3.5S59.3,57,57.3,57H33.5C31.6,57,30,55.4,30,53.5z M61,24.5c0-1.9-1.6-3.5-3.5-3.5
-h-24c-1.9,0-3.5,1.6-3.5,3.5v14c0,1.9,1.6,3.5,3.5,3.5h24c1.9,0,3.5-1.6,3.5-3.5V24.5z M37,28h17v7H37V28z"/>
-</svg>`,
+  media: '<span class="material-symbols-outlined">text_snippet</span>',
   attributes: { class: 'gjs-block-section' },
   category: 'Additional',
   content: `<section>
@@ -272,8 +266,6 @@ const newPanel = panelManager.addPanel({
           )
           .open();
 
-        //editor.getHtml();
-        //editor.getCss();
       },
     },
     {
@@ -291,19 +283,10 @@ const newPanel = panelManager.addPanel({
           .open();
       },
     },
-    {
-      id: 'open-modal',
-      className: 'btn-open-modal',
-      label: `<span class="material-symbols-outlined">
-      open_in_new
-      </span>`,
-      context: 'core:open-modal',
-      command: (editor) => {
-        openModal();
-      },
-    },
   ],
 });
+
+
 
 /**
  *
@@ -354,7 +337,6 @@ function findComponentStyles(editor, selected) {
  * @returns {string}
  */
 function createBlockTemplate(editor, selected, name_blockId) {
-  const bm = editor.BlockManager;
   const blockId = name_blockId.blockId;
   const name = name_blockId.name;
 
@@ -367,11 +349,13 @@ function createBlockTemplate(editor, selected, name_blockId) {
   const css = `<style>${blockCss}</style>`;
   const elementHtmlCss = finalHtml + css;
 
-  bm.add(`customBlockTemplate_${blockId}`, {
+  editor.BlockManager.add(`customBlockTemplate_${blockId}`, {
     category: 'Custom Blocks',
     attributes: { custom_block_template: true },
     label: `${name}`,
-    media: '<i class="fa fa-square"></i>',
+    media: `<span class="material-symbols-outlined">
+    assignment
+    </span>`,
     content: elementHtmlCss,
   });
 }
@@ -387,9 +371,24 @@ const openModal = () => {
 };
 const closeModal = () => {
   const content = editor.Modal.getContent();
-  console.log(content.querySelector('#txtText').value);
+  const block_name = content.querySelector('#txtText').value;
+  console.log(block_name);
+  createBlockTemplateConfirmation(block_name);
   editor.Modal.close();
 };
+
+function  createBlockTemplateConfirmation (name) {
+    const selected = editor.getSelected();
+    // let name = this.blockTemplateForm.get('name')!.value
+    let blockId = 'customBlockTemplate_' + name.split(' ').join('_');
+    let name_blockId = {
+      'name': name,
+      'blockId': blockId
+    };
+
+    createBlockTemplate(editor, selected, name_blockId);
+
+}
 
 // コンポーネントを上下に移動(試作品)
 editor.on('component:selected', () => {
@@ -461,6 +460,12 @@ editor.on('component:selected', () => {
             label:
               '<span class="material-symbols-outlined material-icons md-16" style="position: relative;top:5px;">arrow_downward</span>',
             command: commandMoveDown,
+          },
+          {
+            attributes: { class: '' },
+            label:
+              '<span class="material-symbols-outlined material-icons md-16" style="position: relative;top:5px;">add_notes</span>',
+            command: openModal,
           },
         ],
       });
