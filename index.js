@@ -363,7 +363,7 @@ function createBlockTemplate(editor, selected, name_blockId) {
 // Open modal
 const openModal = () => {
   const content = document.createElement('div');
-  content.innerHTML = `<input id="txtText" type="text"> <button onclick="closeModal()" >閉じる</button>`;
+  content.innerHTML = `<input id="txtText" type="text"> <button onclick="closeModal()" >コンポーネントを保存</button>`;
   editor.Modal.open({
     title: 'My title', // string | HTMLElement
     content: content, // string | HTMLElement
